@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销售管理系统 Sales Tracking</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#F4F5F7;min-height:100vh;color:#1a1a2e}
+  .screen{display:none;min-height:100vh;padding:1.5rem}
+  .screen.active{display:block}
+  .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+  .btn{padding:9px 20px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#333;font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s}
+  .btn:hover{background:#f5f5f5}
+  .btn-primary{background:#185FA5;color:#fff;border-color:#185FA5}
+  .btn-primary:hover{background:#0C447C;border-color:#0C447C}
+  input,select,textarea{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#333;font-size:14px;font-family:inherit;transition:border .15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,0.12)}
+  label{font-size:13px;color:#666;display:block;margin-bottom:5px}
+  .form-group{margin-bottom:1rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+  .metric{background:#f0f4fb;border-radius:10px;padding:1.1rem;text-align:center}
+  .metric-val{font-size:28px;font-weight:600;color:#185FA5}
+  .metric-lbl{font-size:12px;color:#666;margin-top:3px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:9px 12px;border-bottom:1px solid #e8e8e8;font-weight:600;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  td{padding:10px 12px;border-bottom:1px solid #f0f0f0;color:#333;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafafa}
+  .nav{display:flex;gap:10px;margin-bottom:1.5rem;align-items:center}
+  .nav h2{flex:1;font-size:20px;font-weight:600}
+  .alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:1rem}
+  .alert-success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+  .alert-error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a}
+  .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+  .tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;background:#E6F1FB;color:#0C447C;font-weight:500}
+  .sep{border:none;border-top:1px solid #eee;margin:1rem 0}
+  .emp-card{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .15s;margin-bottom:4px}
+  .emp-card:hover{background:#f5f5f5;border-color:#e0e0e0}
+  .emp-card.selected{background:#E6F1FB;border-color:#85B7EB}
+  .badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:#E6F1FB;color:#0C447C}
+
+  /* Login */
+  #loginScreen{display:flex;align-items:center;justify-content:center;padding-top:80px;background:linear-gradient(135deg,#f0f4fb 0%,#e8f0fe 100%)}
+  .login-box{width:380px}
+  .login-header{text-align:center;margin-bottom:2rem}
+  .login-logo{font-size:40px;margin-bottom:10px}
+  .login-title{font-size:26px;font-weight:700;color:#1a1a2e}
+  .login-sub{font-size:13px;color:#888;margin-top:4px}
+
+  @media(max-width:700px){
+    .grid2,.grid3{grid-template-columns:1fr}
+    #bossLayout{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="login-header">
+      <div class="login-logo">📊</div>
+      <div class="login-title">销售管理系统</div>
+      <div class="login-sub">Sales Tracking System</div>
+    </div>
+    <div class="card">
+      <div id="loginAlert" style="display:none" class="alert alert-error"></div>
+      <div class="form-group">
+        <label>账号 Account</label>
+        <select id="loginUser">
+          <option value="">选择账号 Select account...</option>
+          <option value="boss">👑 老板 (Boss)</option>
+          <option value="emp1">员工 1 — Ahmad</option>
+          <option value="emp2">员工 2 — Siti</option>
+          <option value="emp3">员工 3 — Kumar</option>
+          <option value="emp4">员工 4 — Nurul</option>
+          <option value="emp5">员工 5 — Raju</option>
+          <option value="emp6">员工 6 — Mei Ling</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>密码 Password</label>
+        <input type="password" id="loginPass" placeholder="输入密码 Enter password..." />
+        <div style="font-size:11px;color:#999;margin-top:5px">演示密码 Demo: 老板=<b>boss123</b>，员工=<b>1234</b></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:11px" onclick="doLogin()">登录 Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMPLOYEE SCREEN -->
+<div id="empScreen" class="screen">
+  <div class="nav">
+    <div>
+      <div style="font-size:13px;color:#888" id="empGreeting"></div>
+      <h2 id="empName">我的销售面板</h2>
+    </div>
+    <button class="btn" onclick="goBack()">退出 Logout</button>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:1rem">➕ 新增销售记录</div>
+        <div id="empAlert" style="display:none" class="alert"></div>
+        <div class="form-group">
+          <label>日期 Date *</label>
+          <input type="date" id="saleDate" />
+        </div>
+        <div class="grid2">
+          <div class="form-group">
+            <label>顾客名字 Customer Name *</label>
+            <input type="text" id="custName" placeholder="Full name..." />
+          </div>
+          <div class="form-group">
+            <label>顾客电话 Phone *</label>
+            <input type="text" id="custPhone" placeholder="01x-xxxxxxx" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Plan Package *</label>
+          <select id="planPkg">
+            <option value="">选择套餐 Select plan...</option>
+            <option>Basic Plan — RM 29/mo</option>
+            <option>Standard Plan — RM 49/mo</option>
+            <option>Premium Plan — RM 89/mo</option>
+            <option>Business Plan — RM 149/mo</option>
+            <option>Enterprise Plan — RM 299/mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>备注 Remarks</label>
+          <textarea id="remarks" rows="3" placeholder="备注 / Notes..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="addSale()">✓ 提交记录 Submit</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="height:100%">
+        <div style="display:flex;align-items:center;margin-bottom:1rem">
+          <div style="font-size:15px;font-weight:600;flex:1">📋 我的销售记录</div>
+          <span id="empCount" class="badge">0 条</span>
+        </div>
+        <div id="empSaleList" style="max-height:420px;overflow-y:auto">
+          <div style="text-align:center;padding:2.5rem;color:#999;font-size:13px">暂无记录<br>No records yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOSS SCREEN -->
+<div id="bossScreen" class="screen">
+  <div class="nav">
+    <div>
+      <div style="font-size:13px;color:#888">管理员仪表板 Admin Dashboard</div>
+      <h2>老板报告 Boss Report</h2>
+    </div>
+    <button class="btn" onclick="goBack()">退出 Logout</button>
+  </div>
+
+  <div class="grid3" style="margin-bottom:1.5rem">
+    <div class="metric"><div class="metric-val" id="totalSales">0</div><div class="metric-lbl">总销售记录 Total Records</div></div>
+    <div class="metric"><div class="metric-val" id="todaySales">0</div><div class="metric-lbl">今日记录 Today</div></div>
+    <div class="metric"><div class="metric-val" id="activeEmps">0</div><div class="metric-lbl">有销售员工 Active Staff</div></div>
+  </div>
+
+  <div id="bossLayout" style="display:grid;grid-template-columns:230px 1fr;gap:1.5rem">
+    <div class="card" style="padding:1rem;align-self:start">
+      <div style="font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">员工列表 Staff</div>
+      <div id="empList"></div>
+      <div class="sep"></div>
+      <div class="emp-card selected" id="cardAll" onclick="selectEmp('all')">
+        <div class="avatar" style="background:#EEEDFE;color:#3C3489;font-size:14px">全</div>
+        <div style="font-size:13px;font-weight:500">全部记录 All</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:1rem">
+        <div style="font-size:15px;font-weight:600;flex:1" id="bossViewTitle">全部销售记录 All Records</div>
+        <label style="font-size:12px;margin-bottom:0;white-space:nowrap">筛选日期:</label>
+        <input type="date" id="filterDate" style="width:160px" onchange="renderBossTable()" />
+        <button class="btn" onclick="clearFilter()" style="font-size:12px;padding:6px 14px">清除 Clear</button>
+        <span id="bossCount" class="badge">0 条</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>日期 Date</th>
+              <th>员工 Staff</th>
+              <th>顾客名字 Customer</th>
+              <th>电话 Phone</th>
+              <th>套餐 Plan</th>
+              <th>备注 Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="bossTableBody">
+            <tr><td colspan="6" style="text-align:center;color:#999;padding:2.5rem">暂无记录</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const USERS={
+  boss:{role:'boss',name:'老板',pass:'boss123'},
+  emp1:{role:'emp',name:'Ahmad',pass:'1234',color:'#dce8f8',tc:'#0C447C',init:'AH'},
+  emp2:{role:'emp',name:'Siti',pass:'1234',color:'#d9f0e5',tc:'#27500A',init:'SI'},
+  emp3:{role:'emp',name:'Kumar',pass:'1234',color:'#fde8cc',tc:'#633806',init:'KU'},
+  emp4:{role:'emp',name:'Nurul',pass:'1234',color:'#fde0e0',tc:'#A32D2D',init:'NU'},
+  emp5:{role:'emp',name:'Raju',pass:'1234',color:'#eae0fc',tc:'#3C3489',init:'RA'},
+  emp6:{role:'emp',name:'Mei Ling',pass:'1234',color:'#d4f0e8',tc:'#085041',init:'ML'}
+};
+
+let sales=[];
+let nextId=6;
+let currentUser=null;
+let selectedEmpFilter='all';
+
+function doLogin(){
+  const uid=document.getElementById('loginUser').value;
+  const pass=document.getElementById('loginPass').value;
+  const alrt=document.getElementById('loginAlert');
+  if(!uid){alrt.style.display='block';alrt.textContent='请选择账号 Please select an account';return;}
+  if(USERS[uid]&&USERS[uid].pass===pass){
+    alrt.style.display='none';
+    currentUser=uid;
+    USERS[uid].role==='boss'?showBoss():showEmp();
+  }else{alrt.style.display='block';alrt.textContent='账号或密码错误 Incorrect account or password';}
+}
+
+function showEmp(){
+  setScreen('empScreen');
+  const u=USERS[currentUser];
+  document.getElementById('empGreeting').textContent='你好 Hello, '+u.name+'!';
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('saleDate').value=today;
+  renderEmpList();
+}
+
+function showBoss(){
+  setScreen('bossScreen');
+  selectedEmpFilter='all';
+  renderEmpListBoss();
+  updateMetrics();
+  renderBossTable();
+}
+
+function setScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  const sc=document.getElementById(id);
+  sc.style.display=id==='loginScreen'?'flex':'block';
+  sc.classList.add('active');
+}
+
+function goBack(){
+  currentUser=null;
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginAlert').style.display='none';
+  setScreen('loginScreen');
+}
+
+function addSale(){
+  const d=document.getElementById('saleDate').value;
+  const n=document.getElementById('custName').value.trim();
+  const p=document.getElementById('custPhone').value.trim();
+  const pl=document.getElementById('planPkg').value;
+  const r=document.getElementById('remarks').value.trim();
+  const alrt=document.getElementById('empAlert');
+  if(!d||!n||!p||!pl){
+    alrt.className='alert alert-error';alrt.textContent='⚠ 请填写所有必填项 Please fill all required fields (*)';alrt.style.display='block';
+    setTimeout(()=>{alrt.style.display='none';},3000);return;
+  }
+  sales.push({id:nextId++,empId:currentUser,date:d,custName:n,custPhone:p,plan:pl,remarks:r});
+  document.getElementById('custName').value='';
+  document.getElementById('custPhone').value='';
+  document.getElementById('planPkg').value='';
+  document.getElementById('remarks').value='';
+  alrt.className='alert alert-success';alrt.textContent='✓ 记录已成功提交！Record submitted!';alrt.style.display='block';
+  setTimeout(()=>{alrt.style.display='none';},2500);
+  renderEmpList();
+}
+
+function renderEmpList(){
+  const myS=sales.filter(s=>s.empId===currentUser).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('empCount').textContent=myS.length+' 条';
+  const el=document.getElementById('empSaleList');
+  if(!myS.length){el.innerHTML='<div style="text-align:center;padding:2.5rem;color:#999;font-size:13px">暂无记录<br>No records yet</div>';return;}
+  el.innerHTML=myS.map(s=>`
+    <div style="padding:10px 0;border-bottom:1px solid #f0f0f0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+        <span style="font-size:12px;color:#888">${s.date}</span>
+        <span class="tag" style="font-size:10px">${s.plan.split('—')[0].trim()}</span>
+      </div>
+      <div style="font-size:14px;font-weight:500">${s.custName}</div>
+      <div style="font-size:12px;color:#888">${s.custPhone}</div>
+      ${s.remarks?`<div style="font-size:12px;color:#aaa;margin-top:2px;font-style:italic">${s.remarks}</div>`:''}
+    </div>`).join('');
+}
+
+function renderEmpListBoss(){
+  const empIds=['emp1','emp2','emp3','emp4','emp5','emp6'];
+  const el=document.getElementById('empList');
+  el.innerHTML=empIds.map(id=>{
+    const u=USERS[id];
+    const cnt=sales.filter(s=>s.empId===id).length;
+    return`<div class="emp-card${selectedEmpFilter===id?' selected':''}" id="card_${id}" onclick="selectEmp('${id}')">
+      <div class="avatar" style="background:${u.color};color:${u.tc}">${u.init}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${u.name}</div>
+        <div style="font-size:11px;color:#999">${cnt} 条记录</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectEmp(id){
+  selectedEmpFilter=id;
+  document.querySelectorAll('.emp-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById(id==='all'?'cardAll':'card_'+id).classList.add('selected');
+  document.getElementById('bossViewTitle').textContent=id==='all'?'全部销售记录 All Records':USERS[id].name+' 的销售记录';
+  renderBossTable();
+}
+
+function updateMetrics(){
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('totalSales').textContent=sales.length;
+  document.getElementById('todaySales').textContent=sales.filter(s=>s.date===today).length;
+  document.getElementById('activeEmps').textContent=new Set(sales.map(s=>s.empId)).size;
+}
+
+function renderBossTable(){
+  const fd=document.getElementById('filterDate').value;
+  let filtered=sales;
+  if(selectedEmpFilter!=='all') filtered=filtered.filter(s=>s.empId===selectedEmpFilter);
+  if(fd) filtered=filtered.filter(s=>s.date===fd);
+  filtered=filtered.sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('bossCount').textContent=filtered.length+' 条';
+  const tb=document.getElementById('bossTableBody');
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#999;padding:2.5rem">暂无记录 No records</td></tr>';return;}
+  tb.innerHTML=filtered.map(s=>{
+    const eu=USERS[s.empId];
+    return`<tr>
+      <td style="white-space:nowrap;font-size:13px">${s.date}</td>
+      <td><div style="display:flex;align-items:center;gap:7px">
+        <div class="avatar" style="width:26px;height:26px;font-size:10px;background:${eu.color};color:${eu.tc}">${eu.init}</div>
+        <span style="font-size:13px">${eu.name}</span></div></td>
+      <td style="font-weight:500">${s.custName}</td>
+      <td style="color:#555;font-size:13px">${s.custPhone}</td>
+      <td><span class="tag">${s.plan.split('—')[0].trim()}</span></td>
+      <td style="color:#999;font-size:12px;max-width:180px">${s.remarks||'—'}</td>
+    </tr>`;
+  }).join('');
+  updateMetrics();
+  renderEmpListBoss();
+}
+
+function clearFilter(){
+  document.getElementById('filterDate').value='';
+  renderBossTable();
+}
+
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('loginScreen').style.display='flex';
+</script>
+</body>
+</html>
