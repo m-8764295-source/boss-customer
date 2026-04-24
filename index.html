@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StaffPortal — Employee System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Firebase SDK (optional — remove if not using Firebase) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --green-50: #f0faf4;
+      --green-100: #d1f0dc;
+      --green-200: #a3e2ba;
+      --green-500: #3daa6b;
+      --green-600: #2d8a56;
+      --green-700: #1f6940;
+      --gray-50: #f9f9f8;
+      --gray-100: #f2f2f0;
+      --gray-200: #e4e4e0;
+      --gray-300: #c8c8c2;
+      --gray-500: #7a7a74;
+      --gray-700: #3a3a36;
+      --gray-900: #1a1a18;
+      --white: #ffffff;
+      --red-50: #fef2f2;
+      --red-500: #ef4444;
+      --red-600: #dc2626;
+      --amber-50: #fffbeb;
+      --amber-500: #f59e0b;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--gray-50);
+      min-height: 100vh;
+      color: var(--gray-900);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ─── AUTH ─── */
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(135deg, var(--green-50) 0%, var(--white) 60%, var(--gray-100) 100%);
+    }
+
+    .auth-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: var(--green-500);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-mark svg { width: 20px; height: 20px; }
+    .logo-text { font-size: 17px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.3px; }
+    .logo-sub { font-size: 11px; color: var(--gray-500); font-weight: 400; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .auth-title { font-size: 22px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.4px; margin-bottom: 6px; }
+    .auth-subtitle { font-size: 14px; color: var(--gray-500); margin-bottom: 28px; line-height: 1.5; }
+
+    .field-group { margin-bottom: 18px; }
+
+    .field-label {
+      display: block;
+      font-size: 13px; font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 7px;
+      letter-spacing: 0.1px;
+    }
+
+    .field-input {
+      width: 100%; height: 44px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 0 14px;
+      font-size: 14px; font-family: var(--font);
+      color: var(--gray-900); background: var(--white);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+    }
+
+    .field-input:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px rgba(61,170,107,0.12);
+    }
+
+    .field-input::placeholder { color: var(--gray-300); }
+
+    .field-select {
+      width: 100%; height: 44px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 0 14px; padding-right: 36px;
+      font-size: 14px; font-family: var(--font);
+      color: var(--gray-900); background: var(--white);
+      outline: none; cursor: pointer;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a74' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    .field-select:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px rgba(61,170,107,0.12);
+    }
+
+    .btn-primary {
+      width: 100%; height: 46px;
+      background: var(--green-500); color: white;
+      border: none; border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 600; font-family: var(--font);
+      cursor: pointer; letter-spacing: 0.1px; margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-primary:hover { background: var(--green-600); }
+    .btn-primary:active { transform: scale(0.99); }
+    .btn-primary:disabled { background: var(--gray-300); cursor: not-allowed; transform: none; }
+
+    .auth-switch { text-align: center; margin-top: 20px; font-size: 13px; color: var(--gray-500); }
+    .auth-switch a { color: var(--green-600); font-weight: 600; cursor: pointer; text-decoration: none; }
+    .auth-switch a:hover { text-decoration: underline; }
+
+    /* ─── ALERTS ─── */
+    .alert {
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 500;
+      margin-bottom: 18px;
+      display: none; align-items: center; gap: 8px;
+      line-height: 1.4;
+    }
+
+    .alert.show { display: flex; }
+    .alert-error   { background: var(--red-50);   color: var(--red-600);  border: 1px solid #fecaca; }
+    .alert-success { background: var(--green-50);  color: var(--green-700); border: 1px solid var(--green-200); }
+    .alert-warning { background: var(--amber-50);  color: #92400e;         border: 1px solid #fde68a; }
+    .alert-info    { background: #eff6ff;           color: #1e40af;         border: 1px solid #bfdbfe; }
+
+    /* ─── PENDING ─── */
+    .pending-wrap {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; background: var(--gray-50);
+    }
+
+    .pending-card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl); padding: 48px 40px;
+      max-width: 440px; width: 100%; text-align: center;
+      box-shadow: var(--shadow-md);
+    }
+
+    .pending-icon {
+      width: 72px; height: 72px;
+      background: var(--amber-50); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px; border: 2px solid #fde68a;
+    }
+
+    .pending-title { font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 10px; letter-spacing: -0.3px; }
+    .pending-desc  { font-size: 14px; color: var(--gray-500); line-height: 1.6; margin-bottom: 28px; }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      height: 40px; padding: 0 20px;
+      background: transparent; border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600; font-family: var(--font);
+      color: var(--gray-700); cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-secondary:hover { border-color: var(--gray-300); background: var(--gray-50); }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      background: var(--white); border-bottom: 1px solid var(--gray-200);
+      padding: 0 24px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-logo { display: flex; align-items: center; gap: 8px; }
+
+    .topbar-logo-mark {
+      width: 30px; height: 30px; background: var(--green-500);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .topbar-brand { font-size: 15px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.2px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .user-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; background: var(--gray-100); border-radius: 100px;
+    }
+
+    .user-avatar {
+      width: 26px; height: 26px; background: var(--green-100); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--green-700);
+    }
+
+    .user-name { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+
+    .btn-logout {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; background: transparent;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; font-family: var(--font);
+      color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+    }
+
+    .btn-logout:hover { border-color: var(--gray-300); color: var(--gray-700); background: var(--gray-50); }
+
+    /* ─── DASHBOARD ─── */
+    .dashboard-content { padding: 32px 24px; max-width: 800px; margin: 0 auto; }
+
+    .greeting-label {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--green-500); margin-bottom: 6px;
+    }
+
+    .greeting-title { font-size: 26px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.5px; margin-bottom: 6px; }
+    .greeting-sub   { font-size: 14px; color: var(--gray-500); line-height: 1.5; margin-bottom: 32px; }
+
+    .services-label {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--gray-500); margin-bottom: 16px;
+    }
+
+    .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+    .service-card {
+      background: var(--white); border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg); padding: 28px 24px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .service-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; background: var(--green-500); opacity: 0; transition: opacity 0.2s;
+    }
+
+    .service-card:hover { border-color: var(--green-200); box-shadow: 0 8px 24px rgba(61,170,107,0.10); transform: translateY(-2px); }
+    .service-card:hover::before { opacity: 1; }
+
+    .service-icon {
+      width: 48px; height: 48px; background: var(--green-50);
+      border-radius: var(--radius-sm); border: 1px solid var(--green-100);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+
+    .service-icon svg { width: 24px; height: 24px; }
+    .service-name { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; letter-spacing: -0.2px; }
+    .service-desc { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+
+    .service-arrow { position: absolute; top: 24px; right: 20px; opacity: 0; color: var(--green-500); transition: opacity 0.2s, transform 0.2s; }
+    .service-card:hover .service-arrow { opacity: 1; transform: translate(2px,-2px); }
+
+    /* ─── FORM ─── */
+    .form-content { padding: 28px 24px; max-width: 600px; margin: 0 auto; }
+
+    .form-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600; color: var(--gray-500);
+      cursor: pointer; margin-bottom: 24px; padding: 6px 0;
+      border: none; background: none; font-family: var(--font); transition: color 0.15s;
+    }
+
+    .form-back:hover { color: var(--gray-900); }
+
+    .form-card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl); padding: 36px 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .form-icon {
+      width: 52px; height: 52px; background: var(--green-50);
+      border-radius: var(--radius-md); border: 1px solid var(--green-100);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+
+    .form-icon svg { width: 26px; height: 26px; }
+    .form-title    { font-size: 20px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.3px; margin-bottom: 4px; }
+    .form-subtitle { font-size: 13px; color: var(--gray-500); margin-bottom: 28px; }
+
+    .optional-tag {
+      font-size: 11px; font-weight: 500; color: var(--gray-300);
+      background: var(--gray-100); padding: 2px 7px; border-radius: 100px;
+      margin-left: 6px; letter-spacing: 0.3px;
+    }
+
+    .req-star { color: var(--green-500); margin-left: 2px; font-size: 12px; }
+
+    .form-actions { margin-top: 28px; }
+
+    /* ─── SPINNER ─── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: white;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── SUCCESS ─── */
+    .success-state { text-align: center; padding: 24px 0; display: none; }
+    .success-state.show { display: block; }
+
+    .success-circle {
+      width: 68px; height: 68px; background: var(--green-50);
+      border: 2px solid var(--green-200); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .success-title { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+    .success-desc  { font-size: 14px; color: var(--gray-500); line-height: 1.5; margin-bottom: 24px; }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px; background: var(--gray-100); border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600; font-family: var(--font);
+      color: var(--gray-700); cursor: pointer; transition: all 0.15s;
+    }
+
+    .btn-ghost:hover { background: var(--gray-200); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 480px) {
+      .auth-card { padding: 28px 20px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .form-card { padding: 24px 20px; }
+      .dashboard-content, .form-content { padding: 20px 16px; }
+      .topbar { padding: 0 16px; }
+      .user-name { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════ LOGIN ═══════════ -->
+  <div id="screen-login" class="screen active">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="logo-mark">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M10 2L3 6v8l7 4 7-4V6L10 2z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M10 2v14M3 6l7 4 7-4" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text">StaffPortal</div>
+            <div class="logo-sub">Employee System</div>
+          </div>
+        </div>
+
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Sign in to your account to continue</p>
+
+        <div id="login-alert" class="alert"></div>
+
+        <div class="field-group">
+          <label class="field-label">Full Name</label>
+          <input type="text" id="login-name" class="field-input" placeholder="Enter your name" autocomplete="name" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <input type="password" id="login-password" class="field-input" placeholder="Enter your password" autocomplete="current-password" />
+        </div>
+
+        <button class="btn-primary" id="btn-login" onclick="handleLogin()">
+          <span>Sign In</span>
+        </button>
+
+        <div class="auth-switch">
+          Don't have an account? <a onclick="showScreen('screen-register')">Register here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ REGISTER ═══════════ -->
+  <div id="screen-register" class="screen">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="logo-mark">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M10 2L3 6v8l7 4 7-4V6L10 2z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M10 2v14M3 6l7 4 7-4" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text">StaffPortal</div>
+            <div class="logo-sub">Employee System</div>
+          </div>
+        </div>
+
+        <h1 class="auth-title">Create account</h1>
+        <p class="auth-subtitle">Register to access the staff portal. Your account will be reviewed by an admin.</p>
+
+        <div id="register-alert" class="alert"></div>
+
+        <div class="field-group">
+          <label class="field-label">Full Name <span class="req-star">*</span></label>
+          <input type="text" id="reg-name" class="field-input" placeholder="Enter your full name" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Password <span class="req-star">*</span></label>
+          <input type="password" id="reg-password" class="field-input" placeholder="Create a password" />
+        </div>
+
+        <button class="btn-primary" id="btn-register" onclick="handleRegister()">
+          <span>Create Account</span>
+        </button>
+
+        <div class="auth-switch">
+          Already have an account? <a onclick="showScreen('screen-login')">Sign in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PENDING ═══════════ -->
+  <div id="screen-pending" class="screen">
+    <div class="pending-wrap">
+      <div class="pending-card">
+        <div class="pending-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#f59e0b" stroke-width="1.5"/>
+            <path d="M12 7v5l3 3" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 class="pending-title">Waiting for Approval</h2>
+        <p class="pending-desc">Your account has been created and is currently pending admin approval. You'll be able to access the portal once an admin reviews your account.</p>
+        <button class="btn-secondary" onclick="logout()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Login
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <div id="screen-dashboard" class="screen">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">
+          <div class="topbar-logo-mark">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2L3 6v8l7 4 7-4V6L10 2z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M10 2v14M3 6l7 4 7-4" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="topbar-brand">StaffPortal</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-badge">
+          <div class="user-avatar" id="user-avatar-text">JD</div>
+          <span class="user-name" id="user-display-name">Staff</span>
+        </div>
+        <button class="btn-logout" onclick="logout()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <div class="dashboard-content">
+      <div class="greeting-label">Dashboard</div>
+      <h1 class="greeting-title">Hello, <span id="greeting-name">there</span> 👋</h1>
+      <p class="greeting-sub">Select a service below to submit a new application.</p>
+
+      <div class="services-label">Available Services</div>
+
+      <div class="services-grid">
+
+        <div class="service-card" onclick="openForm('fibre')">
+          <div class="service-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              <path d="M2 12h20"/>
+            </svg>
+          </div>
+          <div class="service-name">Fibre</div>
+          <div class="service-desc">Broadband fibre plan applications</div>
+        </div>
+
+        <div class="service-card" onclick="openForm('mobile')">
+          <div class="service-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2"/>
+              <path d="M12 18h.01"/>
+            </svg>
+          </div>
+          <div class="service-name">Mobile Line</div>
+          <div class="service-desc">New mobile line registrations</div>
+        </div>
+
+        <div class="service-card" onclick="openForm('device')">
+          <div class="service-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <div class="service-name">Device</div>
+          <div class="service-desc">Device purchase &amp; IMEI tracking</div>
+        </div>
+
+        <div class="service-card" onclick="openForm('wifi')">
+          <div class="service-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+              <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+              <circle cx="12" cy="20" r="1" fill="#3daa6b"/>
+            </svg>
+          </div>
+          <div class="service-name">Home WiFi 5G</div>
+          <div class="service-desc">5G home broadband applications</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FORM ═══════════ -->
+  <div id="screen-form" class="screen">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">
+          <div class="topbar-logo-mark">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2L3 6v8l7 4 7-4V6L10 2z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M10 2v14M3 6l7 4 7-4" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="topbar-brand">StaffPortal</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-badge">
+          <div class="user-avatar" id="form-avatar-text">JD</div>
+          <span class="user-name" id="form-display-name">Staff</span>
+        </div>
+        <button class="btn-logout" onclick="logout()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <div class="form-content">
+      <button class="form-back" onclick="showScreen('screen-dashboard')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back to Dashboard
+      </button>
+
+      <div class="form-card">
+        <div class="form-icon" id="form-icon"></div>
+        <h2 class="form-title" id="form-title">Form</h2>
+        <p class="form-subtitle" id="form-subtitle">Fill in the details below</p>
+
+        <div id="form-alert" class="alert"></div>
+        <div id="form-fields"></div>
+
+        <div id="form-success" class="success-state">
+          <div class="success-circle">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#3daa6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3 class="success-title">Submission Successful</h3>
+          <p class="success-desc">Your application has been submitted. Our team will process it shortly.</p>
+          <button class="btn-ghost" onclick="showScreen('screen-dashboard')">Back to Dashboard</button>
+        </div>
+
+        <div class="form-actions" id="form-actions">
+          <button class="btn-primary" id="btn-submit" onclick="handleFormSubmit()">
+            <span>Submit Application</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ╔══════════════════════════════════════════════╗
+    // ║  FIREBASE CONFIG — replace with your values  ║
+    // ╚══════════════════════════════════════════════╝
+    const FIREBASE_CONFIG = {
+      apiKey:            "AIzaSyAmXvhN8Qjszp8LID909ZvLDt0dpRHDgN4",
+      authDomain:        "worker-sales-record.firebaseapp.com",
+      projectId:         "worker-sales-record",
+      storageBucket:     "worker-sales-record.firebasestorage.app",
+      messagingSenderId: "593835299596",
+      appId:             "1:593835299596:web:7b6e0bd929c1a6d71caf29"
+    };
+
+    // ─── State ───────────────────────────────────────
+    let db          = null;
+    let currentUser = null;
+    let currentForm = null;
+
+    // ─── Firebase Init ───────────────────────────────
+    async function initFirebase() {
+      try {
+        if (typeof firebase !== 'undefined') {
+          firebase.initializeApp(FIREBASE_CONFIG);
+          db = firebase.firestore();
+          console.log('[StaffPortal] Firebase connected.');
+        } else {
+          console.warn('[StaffPortal] Firebase SDK not loaded — running in demo mode.');
+        }
+      } catch(e) {
+        console.warn('[StaffPortal] Firebase init failed — demo mode.', e);
+      }
+    }
+
+    // ─── Screen Router ───────────────────────────────
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // ─── Alert Helper ────────────────────────────────
+    function showAlert(id, type, msg) {
+      const el = document.getElementById(id);
+      const icons = {
+        error:   '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+        success: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+        warning: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.5"/><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+        info:    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'
+      };
+      el.className = 'alert show alert-' + type;
+      el.innerHTML = (icons[type] || '') + '<span>' + msg + '</span>';
+    }
+
+    function hideAlert(id) {
+      const el = document.getElementById(id);
+      el.className = 'alert';
+      el.innerHTML = '';
+    }
+
+    // ─── Button Loading State ─────────────────────────
+    function setLoadingBtn(btnId, loading, idleLabel) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.disabled = loading;
+      btn.innerHTML = loading
+        ? '<div class="spinner"></div><span>Please wait...</span>'
+        : '<span>' + (idleLabel || 'Submit') + '</span>';
+    }
+
+    // ─── User UI ──────────────────────────────────────
+    function getInitials(name) {
+      return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function updateUserUI(name) {
+      const initials = getInitials(name);
+      ['user-avatar-text', 'form-avatar-text'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = initials;
+      });
+      ['user-display-name', 'form-display-name'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = name;
+      });
+      const greet = document.getElementById('greeting-name');
+      if (greet) greet.textContent = name.split(' ')[0];
+    }
+
+    // ─── REGISTER ─────────────────────────────────────
+    async function handleRegister() {
+      hideAlert('register-alert');
+      const name = document.getElementById('reg-name').value.trim();
+      const pass = document.getElementById('reg-password').value.trim();
+
+      if (!name || !pass) {
+        showAlert('register-alert', 'error', 'Please fill in all fields.');
+        return;
+      }
+      if (pass.length < 4) {
+        showAlert('register-alert', 'error', 'Password must be at least 4 characters.');
+        return;
+      }
+
+      setLoadingBtn('btn-register', true);
+
+      if (db) {
+        try {
+          const existing = await db.collection('users').where('name', '==', name).get();
+          if (!existing.empty) {
+            showAlert('register-alert', 'error', 'A user with this name already exists.');
+            setLoadingBtn('btn-register', false, 'Create Account');
+            return;
+          }
+          await db.collection('users').add({
+            name,
+            password: pass,
+            status: 'pending',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          document.getElementById('reg-name').value = '';
+          document.getElementById('reg-password').value = '';
+          showAlert('register-alert', 'success', 'Account created! Waiting for admin approval.');
+          setLoadingBtn('btn-register', false, 'Create Account');
+          setTimeout(() => showScreen('screen-pending'), 1800);
+        } catch (e) {
+          showAlert('register-alert', 'error', 'Registration failed. Please try again.');
+          setLoadingBtn('btn-register', false, 'Create Account');
+        }
+      } else {
+        // Demo mode
+        setTimeout(() => {
+          setLoadingBtn('btn-register', false, 'Create Account');
+          showAlert('register-alert', 'success', 'Account created (demo mode)! Waiting for admin approval.');
+          setTimeout(() => showScreen('screen-pending'), 1800);
+        }, 1200);
+      }
+    }
+
+    // ─── LOGIN ────────────────────────────────────────
+    async function handleLogin() {
+      hideAlert('login-alert');
+      const name = document.getElementById('login-name').value.trim();
+      const pass = document.getElementById('login-password').value.trim();
+
+      if (!name || !pass) {
+        showAlert('login-alert', 'error', 'Please enter your name and password.');
+        return;
+      }
+
+      setLoadingBtn('btn-login', true);
+
+      if (db) {
+        try {
+          const snap = await db.collection('users')
+            .where('name', '==', name)
+            .where('password', '==', pass)
+            .get();
+
+          setLoadingBtn('btn-login', false, 'Sign In');
+
+          if (snap.empty) {
+            showAlert('login-alert', 'error', 'Incorrect name or password.');
+            return;
+          }
+
+          const doc  = snap.docs[0];
+          const data = doc.data();
+          currentUser = { id: doc.id, ...data };
+
+          if (data.status === 'pending') {
+            showScreen('screen-pending');
+          } else if (data.status === 'suspended') {
+            showAlert('login-alert', 'error', 'Your account has been suspended. Please contact admin.');
+          } else if (data.status === 'approved') {
+            updateUserUI(data.name);
+            showScreen('screen-dashboard');
+          } else {
+            showAlert('login-alert', 'error', 'Unknown account status. Contact admin.');
+          }
+        } catch (e) {
+          showAlert('login-alert', 'error', 'Login failed. Please try again.');
+          setLoadingBtn('btn-login', false, 'Sign In');
+        }
+      } else {
+        // Demo mode: password "pending" / "suspended" / anything else = approved
+        setTimeout(() => {
+          setLoadingBtn('btn-login', false, 'Sign In');
+          if (pass === 'pending') {
+            showScreen('screen-pending');
+          } else if (pass === 'suspended') {
+            showAlert('login-alert', 'error', 'Your account has been suspended. Please contact admin.');
+          } else {
+            currentUser = { id: 'demo', name, status: 'approved' };
+            updateUserUI(name);
+            showScreen('screen-dashboard');
+          }
+        }, 1000);
+      }
+    }
+
+    // ─── LOGOUT ───────────────────────────────────────
+    function logout() {
+      currentUser = null;
+      document.getElementById('login-name').value    = '';
+      document.getElementById('login-password').value = '';
+      hideAlert('login-alert');
+      showScreen('screen-login');
+    }
+
+    // ─── FORM CONFIGS ─────────────────────────────────
+    const formConfigs = {
+      fibre: {
+        title:    'Fibre Application',
+        subtitle: 'Submit a new fibre broadband plan application',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round">
+                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                 <path d="M2 12h20"/>
+               </svg>`,
+        fields: [
+          { id: 'name',   label: 'Full Name',     type: 'text',   required: true,  placeholder: 'Customer full name' },
+          { id: 'phone',  label: 'Phone Number',  type: 'text',   required: true,  placeholder: 'e.g. 01X-XXXXXXX' },
+          { id: 'plan',   label: 'Fibre Plan',    type: 'text',   required: true,  placeholder: 'e.g. 100Mbps, 500Mbps' },
+          { id: 'outlet', label: 'Outlet',        type: 'select', required: false, options: ['MEP', 'Hybrid'] }
+        ]
+      },
+      mobile: {
+        title:    'Mobile Line Application',
+        subtitle: 'Register a new mobile line for a customer',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                 <rect x="5" y="2" width="14" height="20" rx="2"/>
+                 <path d="M12 18h.01"/>
+               </svg>`,
+        fields: [
+          { id: 'name',   label: 'Full Name',     type: 'text',   required: true,  placeholder: 'Customer full name' },
+          { id: 'ic',     label: 'IC Number',     type: 'text',   required: true,  placeholder: 'e.g. 900101-01-1234' },
+          { id: 'phone',  label: 'Phone Number',  type: 'text',   required: true,  placeholder: 'e.g. 01X-XXXXXXX' },
+          { id: 'plan',   label: 'Mobile Plan',   type: 'text',   required: true,  placeholder: 'e.g. Unlimited, 30GB' },
+          { id: 'outlet', label: 'Outlet',        type: 'select', required: false, options: ['MEP', 'Hybrid'] }
+        ]
+      },
+      device: {
+        title:    'Device Application',
+        subtitle: 'Record a device purchase with IMEI tracking',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                 <rect x="2" y="3" width="20" height="14" rx="2"/>
+                 <path d="M8 21h8M12 17v4"/>
+               </svg>`,
+        fields: [
+          { id: 'name',   label: 'Full Name',     type: 'text',   required: true,  placeholder: 'Customer full name' },
+          { id: 'phone',  label: 'Phone Number',  type: 'text',   required: true,  placeholder: 'e.g. 01X-XXXXXXX' },
+          { id: 'imei',   label: 'IMEI Number',   type: 'text',   required: true,  placeholder: '15-digit IMEI number' },
+          { id: 'outlet', label: 'Outlet',        type: 'select', required: false, options: ['MEP', 'Hybrid'] }
+        ]
+      },
+      wifi: {
+        title:    'Home WiFi 5G Application',
+        subtitle: 'Submit a 5G home broadband application',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#3daa6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                 <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                 <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                 <circle cx="12" cy="20" r="1" fill="#3daa6b"/>
+               </svg>`,
+        fields: [
+          { id: 'name',   label: 'Full Name',     type: 'text',   required: true,  placeholder: 'Customer full name' },
+          { id: 'ic',     label: 'IC Number',     type: 'text',   required: true,  placeholder: 'e.g. 900101-01-1234' },
+          { id: 'plan',   label: 'WiFi Plan',     type: 'text',   required: true,  placeholder: 'e.g. 5G Home 100GB' },
+          { id: 'outlet', label: 'Outlet',        type: 'select', required: false, options: ['MEP', 'Hybrid'] }
+        ]
+      }
+    };
+
+    // ─── OPEN FORM ────────────────────────────────────
+    function openForm(type) {
+      currentForm = type;
+      const cfg = formConfigs[type];
+
+      document.getElementById('form-icon').innerHTML    = cfg.icon;
+      document.getElementById('form-title').textContent    = cfg.title;
+      document.getElementById('form-subtitle').textContent = cfg.subtitle;
+      document.getElementById('form-success').classList.remove('show');
+      document.getElementById('form-actions').style.display = 'block';
+      hideAlert('form-alert');
+
+      let html = '';
+      cfg.fields.forEach(f => {
+        const badge = f.required
+          ? '<span class="req-star">*</span>'
+          : '<span class="optional-tag">Optional</span>';
+        html += `<div class="field-group">`;
+        html += `<label class="field-label" for="ff-${f.id}">${f.label} ${badge}</label>`;
+        if (f.type === 'select') {
+          html += `<select id="ff-${f.id}" class="field-select">`;
+          html += `<option value="">Select outlet...</option>`;
+          f.options.forEach(o => html += `<option value="${o}">${o}</option>`);
+          html += `</select>`;
+        } else {
+          html += `<input type="${f.type}" id="ff-${f.id}" class="field-input" placeholder="${f.placeholder}" />`;
+        }
+        html += `</div>`;
+      });
+
+      document.getElementById('form-fields').innerHTML = html;
+      setLoadingBtn('btn-submit', false, 'Submit Application');
+
+      if (currentUser) {
+        const initials = getInitials(currentUser.name);
+        const fa = document.getElementById('form-avatar-text');
+        const fn = document.getElementById('form-display-name');
+        if (fa) fa.textContent = initials;
+        if (fn) fn.textContent = currentUser.name;
+      }
+
+      showScreen('screen-form');
+    }
+
+    // ─── FORM SUBMIT ──────────────────────────────────
+    async function handleFormSubmit() {
+      hideAlert('form-alert');
+      const cfg = formConfigs[currentForm];
+      const formData = {};
+      let valid = true;
+      let firstEmpty = null;
+
+      for (const f of cfg.fields) {
+        const el  = document.getElementById('ff-' + f.id);
+        const val = el ? el.value.trim() : '';
+        if (f.required && !val) {
+          valid = false;
+          if (!firstEmpty) firstEmpty = f.label;
+          if (el) {
+            el.style.borderColor = 'var(--red-500)';
+            el.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.12)';
+          }
+        } else {
+          if (el) { el.style.borderColor = ''; el.style.boxShadow = ''; }
+          formData[f.id] = val;
+        }
+      }
+
+      if (!valid) {
+        showAlert('form-alert', 'error', `Please fill in "${firstEmpty}" — it is required.`);
+        return;
+      }
+
+      setLoadingBtn('btn-submit', true);
+
+      if (db && currentUser) {
+        try {
+          await db.collection('submissions').add({
+            userId:   currentUser.id,
+            userName: currentUser.name,
+            category: currentForm,
+            formData,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          showSuccessState();
+        } catch (e) {
+          showAlert('form-alert', 'error', 'Submission failed. Please try again.');
+          setLoadingBtn('btn-submit', false, 'Submit Application');
+        }
+      } else {
+        // Demo mode
+        setTimeout(showSuccessState, 1400);
+      }
+    }
+
+    function showSuccessState() {
+      document.getElementById('form-fields').innerHTML      = '';
+      document.getElementById('form-actions').style.display = 'none';
+      document.getElementById('form-success').classList.add('show');
+      hideAlert('form-alert');
+    }
+
+    // ─── Boot ─────────────────────────────────────────
+    initFirebase();
+  </script>
+</body>
+</html>
