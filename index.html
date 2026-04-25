@@ -864,7 +864,7 @@
                </svg>`,
         fields: [
           { id: 'name',   label: 'Full Name',     type: 'text',   required: true,  placeholder: 'Customer full name' },
-          { id: 'phone',  label: 'Phone Number',  type: 'text',   required: true,  placeholder: 'e.g. 01X-XXXXXXX' },
+          { id: 'ic',     label: 'IC Number',     type: 'text',   required: true,  placeholder: 'e.g. 900101-01-1234' },
           { id: 'plan',   label: 'Fibre Plan',    type: 'text',   required: true,  placeholder: 'e.g. 100Mbps, 500Mbps' },
           { id: 'outlet', label: 'Outlet',        type: 'select', required: false, options: ['MEP', 'Hybrid'] }
         ]
@@ -894,6 +894,7 @@
         fields: [
           { id: 'name',   label: 'Full Name',     type: 'text',   required: true,  placeholder: 'Customer full name' },
           { id: 'phone',  label: 'Phone Number',  type: 'text',   required: true,  placeholder: 'e.g. 01X-XXXXXXX' },
+          { id: 'model',  label: 'Device Model',  type: 'text',   required: true,  placeholder: 'e.g. Samsung Galaxy S24' },
           { id: 'imei',   label: 'IMEI Number',   type: 'text',   required: true,  placeholder: '15-digit IMEI number' },
           { id: 'outlet', label: 'Outlet',        type: 'select', required: false, options: ['MEP', 'Hybrid'] }
         ]
